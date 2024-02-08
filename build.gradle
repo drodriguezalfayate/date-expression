@@ -30,6 +30,10 @@ java {
     withSourcesJar()
 }
 
+afterEvaluate {
+    tasks.findByName('sourcesJar').dependsOn(tasks.findByName('generateGrammarSource'))
+}
+
 publishing {
     publications {
         mavenJava(MavenPublication) {
