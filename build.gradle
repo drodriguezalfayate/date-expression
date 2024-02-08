@@ -1,9 +1,13 @@
 plugins {
-    id 'java'
+    id 'java-library'
     id 'antlr'
+    id 'maven-publish'
+    id 'signing'
+    id("io.github.gradle-nexus.publish-plugin") version "2.0.0-rc-2"
 }
 
-group 'com.proxia.dateparser'
+group 'com.proxiasuite.utils'
+archivesBaseName = 'date-expression'
 version '1.0.0'
 
 repositories {
@@ -14,6 +18,60 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
     antlr "org.antlr:antlr4:4.13.1"
+}
+
+
+javadoc {
+    options.encoding = 'UTF-8'
+}
+
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+            pom {
+                name = 'date-expression'
+                description = 'Librería que permite analizar una expresión de fecha en lenguaje natural y convertirla a fechas reales del sistema en un periodo de tiempo'
+                url = 'https://github.com/drodriguezalfayate/date-expression'
+                licenses {
+                    license {
+                        name = 'The MIT License'
+                        url = 'https://opensource.org/license/mit/'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'drodriguezalfayate'
+                        name = 'David Rodríguez Alfayate'
+                        email = 'drodriguezalfayate@gmail.com'
+                    }
+                }
+                scm {
+                    connection = 'scm:git@github.com:drodriguezalfayate/date-expression.git'
+                    developerConnection = 'scm:git@github.com:drodriguezalfayate/date-expression.git'
+                    url = 'https://github.com/drodriguezalfayate/date-expression.git'
+                }
+            }
+        }
+    }
+}
+
+signing {
+    sign publishing.publications.mavenJava
+}
+
+nexusPublishing {
+    repositories {
+        ossrh {
+            nexusUrl.set(uri("https://s01.oss.sonatype.org/service/local/"))
+            snapshotRepositoryUrl.set(uri("https://s01.oss.sonatype.org/content/repositories/snapshots/"))
+        }
+    }
 }
 
 test {
