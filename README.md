@@ -25,10 +25,10 @@ serie de datos de entrada:
 
 Todos los ejemplos se refieren a 2024 y con una periodicidad de dos años
 * `uno de enero`, resolvería como el día '1/01/2024' y '1/01/2025'
-* `segundo domingo de enero`, resolvería como los días '14/01/2024' y '12/05/2024'
-* `lunes despues del lunes de pascua`, resolvería como el día '08/04/2024' y '28/04/2024'
+* `segundo domingo de enero`, resolvería como los días '14/01/2024' y '12/01/2025'
+* `lunes despues del lunes de pascua`, resolvería como el día '08/04/2024' y '28/04/2025'
 * `3 y cuarto domingo de junio y seis de junio y primer domingo de semana santa` que resolvería como los días
-  '24/03/2024', '06/06/2024', '16/06/2023', '23/06/2024', '13/04/2025', '06/06/2025', '22/06/2029' y '29/06/2029'
+  '24/03/2024', '06/06/2024', '16/06/2024', '23/06/2024', '13/04/2025', '06/06/2025', '22/06/2029' y '29/06/2029'
 
 Permite, adicionalmente la expresión de condicionales:
 ```
@@ -37,7 +37,7 @@ entonces primer fin de semana de marzo
 si no ultimo fin de semana de abril
 ```   
 
-Que resolvería para 2024, como '2/3/2024', '3/3/2024' y para 2025 como '26/04/2024' y '27/04/2024'
+Que resolvería para 2024, como '2/3/2024', '3/3/2024' y para 2025 como '26/04/2025' y '27/04/2025'
 
 Y la creación de constantes que pueden ser utilizadas a lo largo de condicionales o bien para devolver datos
 ```
