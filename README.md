@@ -110,8 +110,8 @@ near: baseDay Near at;
 /**
  * Una operación de "en fecha concreta" o "en rango de fechas"
  */
-at: (day (And day)*) (weekday (And weekday)*)? atom  |
-    weekday atom |
+at: (day (And day)*) (weekday (And weekday)*)? dateExpr  |
+    weekday dateExpr |
     atom ;
 
 
@@ -213,6 +213,11 @@ baseDay:  Monday |
           WeekEnd;
 
 ````
+
+## Uso en proyectos
+Publicado en central.sonatype.com, https://central.sonatype.com/artifact/com.proxiasuite.utils/date-expression.
+
+
 
 
 
