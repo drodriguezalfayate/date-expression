@@ -88,8 +88,8 @@ near: baseDay Near at;
 /**
  * Una operación de "en fecha concreta" o "en rango de fechas"
  */
-at: (day (And day)*) (weekday (And weekday)*)? atom  |
-    weekday atom |
+at: (day (And day)*) (weekday (And weekday)*)? dateExpr  |
+    weekday dateExpr |
     atom ;
 
 
@@ -267,7 +267,7 @@ And: ',' | 'y';
 Last: ('u'|'\u00FA') 'ltim' GenderExtension;
 Prelast: 'pen' ('u'|'\u00FA') 'ltim' GenderExtension;
 Yesterday: 'vispera' | 'ayer';
-One: FirstFragment | 'un' GenderExtension;
+One: FirstFragment | 'un' GenderExtension?;
 Two: SecndFragment | 'dos';
 Three: ThirdFragment | 'tres';
 Four: FourthFragment | 'cuatro';

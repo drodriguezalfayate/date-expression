@@ -427,4 +427,15 @@ public class GrammarTest {
         assertEquals(LocalDate.of(2025,1,19),de.getDates().get(3));
 
     }
+
+    @Test
+    public void testRecursiveAt() {
+        DateExpression de = DateExpression.parse(new Locale("es","ES"), ZoneId.of("Europe/Paris"),true,2024,3,"primer lunes del primer y segundo lunes de julio");
+        assertNotNull(de);
+        assertEquals(3,de.getDates().size());
+        assertEquals(LocalDate.of(2024,7,1),de.getDates().get(0));
+        assertEquals(LocalDate.of(2025,7,7),de.getDates().get(1));
+        assertEquals(LocalDate.of(2026,7,6),de.getDates().get(2));
+
+    }
 }
