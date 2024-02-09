@@ -28,6 +28,7 @@
  * @author David Rodríguez Alfayate
  */
 grammar DateExpressionGrammar;
+options { caseInsensitive=true; }
 @header {
 package com.proxiasuite.dateparser.grammar;
 }
@@ -301,6 +302,6 @@ ThirtyOne: ThirthiethFragment FirstFragment | 'treintayuno' | 'treinta' WS 'y' W
 
 WS: [ \t\n\r\f]+ -> skip ;
 PREPO: ('de' ('l')? | 'la' | 'el') -> skip;
-ID: [a-z$]+;
+ID: [a-z$_]+;
 
 
