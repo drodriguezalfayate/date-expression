@@ -8,6 +8,10 @@ plugins {
 group 'com.proxiasuite.utils'
 version '1.0.2'
 
+// Por el plugin de java: sourceCompatibility, targetCompatibility, archivesBaseName ...
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
+
 repositories {
     mavenCentral()
 }
