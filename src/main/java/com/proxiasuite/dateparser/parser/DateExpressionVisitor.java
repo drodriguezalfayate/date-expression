@@ -23,11 +23,11 @@
  */
 package com.proxiasuite.dateparser.parser;
 
-import com.proxiasuite.dateparser.resolver.DateType;
-import com.proxiasuite.dateparser.resolver.IDateResolver;
 import com.proxiasuite.dateparser.DateExpression;
 import com.proxiasuite.dateparser.grammar.DateExpressionGrammarBaseListener;
 import com.proxiasuite.dateparser.grammar.DateExpressionGrammarParser;
+import com.proxiasuite.dateparser.resolver.DateType;
+import com.proxiasuite.dateparser.resolver.IDateResolver;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
@@ -36,6 +36,7 @@ import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalUnit;
 import java.util.*;
+import java.util.function.BiFunction;
 
 /**
  * Realiza la interpretación de la gramática. El proceso de interpretación sigue
@@ -192,52 +193,60 @@ public class DateExpressionVisitor extends DateExpressionGrammarBaseListener {
 
     @Override
     public void exitBefore(DateExpressionGrammarParser.BeforeContext ctx) {
-        // En la pila estan todas las posibilidades, podemos tener un día
-        // un día de la semana (weekDay) una expresión
-        Integer amount = 1;
-        DayQualifierType qualifierType = null;
-        DateExpression expr = null;
-        // Regulador de fechas que por defecto será 1 día.
-        TemporalUnit unit = ChronoUnit.DAYS;
-        if(ctx.Month()!=null) unit = ChronoUnit.MONTHS;
-        if(ctx.Week()!=null) unit = ChronoUnit.WEEKS;
-
-        // Rellneamos con la pila.
-        while(!getStack().isEmpty()) {
-            Object o = getStack().poll();
-            if(o instanceof DayQualifierType) {
-                qualifierType = (DayQualifierType) o;
-            } else if(o instanceof DateExpression) {
-                expr = (DateExpression) o;
-            } else if(o instanceof Integer) {
-                amount = (Integer)o;
-            }
-        }
-
-        // Ahora tenemos que decidir que tipo de operación after aplicamos
-        // en función de los datos.
-        if(qualifierType==null) {
-            expr = expr.before(amount,unit);
-        } else if(qualifierType.dayOfWeek != null){
-            expr = expr.before(qualifierType.dayOfWeek,amount);
-        } else if(qualifierType == DayQualifierType.Weekend) {
-            expr = expr.beforeWeekend(amount);
-        }
-        // Lo recolocamos en la pila...
-        getStack().push(expr);
+        resolveNeighborhoodStackOperation(ctx, DateExpression::before,
+                                               DateExpression::before,
+                                               DateExpression::beforeWeekend);
     }
 
     @Override
     public void exitAfter(DateExpressionGrammarParser.AfterContext ctx) {
+        resolveNeighborhoodStackOperation(ctx, DateExpression::after,
+                                               DateExpression::after,
+                                               DateExpression::afterWeekend);
+    }
+
+    @Override
+    public void exitNear(DateExpressionGrammarParser.NearContext ctx) {
+        resolveNeighborhoodStackOperation(ctx,(expr,amount,unit)->expr,
+                                              (expr,dayOfWeek,amount)->expr.near(dayOfWeek),
+                                              (expr,amount)->expr.nearWeekend());
+    }
+
+    @FunctionalInterface
+    interface TriFunction<T, U, S, R> {
+
+        /**
+         * Applies this function to the given arguments.
+         *
+         * @param t the first function argument
+         * @param u the second function argument
+         * @return the function result
+         */
+        R apply(T t, U u, S s);
+    }
+
+
+    /**
+     * Ejecuta una operación de "proximidad" sobre la pila, la expresión de proximidad es "antes de",
+     * "despues de" o "cerca de"
+     *
+     * @param ctx                El conexto de parsing
+     * @param unitProcessor      Functión (trifunction) que procesa para la resolución de unidades
+     * @param dayOfWeekProcessor Functión (trifunction) que procesa para la resolución de días de semana
+     * @param weekendProcessor   Functión (bifunction) que procesa para la resolución de fines de semana
+     */
+    void resolveNeighborhoodStackOperation(ParserRuleContext ctx,
+                                           TriFunction<DateExpression,Integer,TemporalUnit,DateExpression> unitProcessor,
+                                           TriFunction<DateExpression,DayOfWeek,Integer,DateExpression> dayOfWeekProcessor,
+                                           BiFunction<DateExpression,Integer,DateExpression> weekendProcessor) {
         // En la pila estan todas las posibilidades, podemos tener un día
         // un día de la semana (weekDay) una expresión
-        Integer amount = 1;
+        int amount = 1;
         DayQualifierType qualifierType = null;
         DateExpression expr = null;
+
         // Regulador de fechas que por defecto será 1 día.
-        TemporalUnit unit = ChronoUnit.DAYS;
-        if(ctx.Month()!=null) unit = ChronoUnit.MONTHS;
-        if(ctx.Week()!=null) unit = ChronoUnit.WEEKS;
+        TemporalUnit unit = guessTemporalUnitFromParseContext(ctx);
 
         // Rellneamos con la pila.
         while(!getStack().isEmpty()) {
@@ -250,42 +259,17 @@ public class DateExpressionVisitor extends DateExpressionGrammarBaseListener {
                 amount = (Integer)o;
             }
         }
-
         // Ahora tenemos que decidir que tipo de operación after aplicamos
         // en función de los datos.
         if(qualifierType==null) {
-            expr = expr.after(amount,unit);
+            expr = unitProcessor.apply(expr,amount,unit);
         } else if(qualifierType.dayOfWeek != null){
-            expr = expr.after(qualifierType.dayOfWeek,amount);
+            expr = dayOfWeekProcessor.apply(expr,qualifierType.dayOfWeek,amount);
         } else if(qualifierType == DayQualifierType.Weekend) {
-            expr = expr.afterWeekend(amount);
+            expr = weekendProcessor.apply(expr,amount);
         }
         // Lo recolocamos en la pila...
         getStack().push(expr);
-    }
-
-    @Override
-    public void exitNear(DateExpressionGrammarParser.NearContext ctx) {
-        // Tenemos que tener en el contexto un día de la semana y una expresión
-        // de fecha, vaciamos la pila...
-        DayQualifierType dayType = null;
-        DateExpression expr = null;
-        while(!getStack().isEmpty()) {
-            Object o = getStack().poll();
-            if(o instanceof DayQualifierType) {
-                dayType = (DayQualifierType) o;
-            } else if(o instanceof DateExpression) {
-                expr = (DateExpression) o;
-            }
-        }
-        if(dayType == DayQualifierType.Weekend) {
-            expr = expr.nearWeekend();
-        } else if(dayType.dayOfWeek != null) {
-            expr = expr.near(dayType.dayOfWeek);
-        }
-        // Lo recolocamos en la pila...
-        getStack().push(expr);
-
     }
 
 
@@ -471,5 +455,25 @@ public class DateExpressionVisitor extends DateExpressionGrammarBaseListener {
             Object returned = currentStack.poll();
             parentStack.push(returned);
         }
+    }
+
+    /**
+     * Recupera del contexto temporal la unidad de tiempo en la que nos encontramos,
+     * por defecto son días.
+     *
+     * @param ctx   El contexto de parsing en el que nos encontramos
+     */
+    private static TemporalUnit guessTemporalUnitFromParseContext(ParserRuleContext ctx) {
+        TemporalUnit unit = ChronoUnit.DAYS;
+        if( ctx instanceof DateExpressionGrammarParser.BeforeContext) {
+            DateExpressionGrammarParser.BeforeContext c = (DateExpressionGrammarParser.BeforeContext) ctx;
+            if (c.Month() != null) unit = ChronoUnit.MONTHS;
+            if (c.Week() != null) unit = ChronoUnit.WEEKS;
+        } else if(ctx instanceof DateExpressionGrammarParser.AfterContext) {
+            DateExpressionGrammarParser.AfterContext c = (DateExpressionGrammarParser.AfterContext) ctx;
+            if (c.Month() != null) unit = ChronoUnit.MONTHS;
+            if (c.Week() != null) unit = ChronoUnit.WEEKS;
+        }
+        return unit;
     }
 }
