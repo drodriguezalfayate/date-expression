@@ -6,7 +6,7 @@ plugins {
 }
 
 group 'com.proxiasuite.utils'
-version '1.0.2'
+version '1.0.3'
 
 // Por el plugin de java: sourceCompatibility, targetCompatibility, archivesBaseName ...
 sourceCompatibility = JavaVersion.VERSION_1_8
