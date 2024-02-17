@@ -81,6 +81,10 @@ public class DateExpression {
      */
     boolean fullWeks;
 
+    /**
+     * Si es una expresión aproximada
+     */
+    boolean approximate;
 
     private DateExpression(WeekFields week,boolean fullWeks, NavigableMap<Integer,List<LocalDate>> dates) {
         this.dates = new TreeMap<>(dates);
@@ -417,8 +421,8 @@ public class DateExpression {
             // Vamos a ver cuantos días le quedan;
             int add = weekDay.getValue() - d.getDayOfWeek().getValue();
             if(add < 0) add+=7;
-            LocalDate after = d.plus(add,ChronoUnit.DAYS);
-            return after.minus(account,ChronoUnit.WEEKS);
+            LocalDate after = d.plusDays(add);
+            return after.minusWeeks(account);
         }));
     }
 
@@ -460,7 +464,7 @@ public class DateExpression {
             // Vamos a ver cuantos días le quedan;
             int add = weekDay.getValue() - d.getDayOfWeek().getValue();
             if(add < 0) add+=7;
-            return d.plus(add,ChronoUnit.DAYS).plus(add==0?account:account-1,ChronoUnit.WEEKS);
+            return d.plusDays(add).plusWeeks(add == 0 ? account : account - 1);
         }));
     }
 
@@ -488,8 +492,8 @@ public class DateExpression {
             // Vamos a ver cuantos días le quedan;
             int add = weekDay.getValue() - d.getDayOfWeek().getValue();
             if(add < 0) add+=7;
-            LocalDate after = d.plus(add,ChronoUnit.DAYS);
-            LocalDate before = after.minus(1,ChronoUnit.WEEKS);
+            LocalDate after = d.plusDays(add);
+            LocalDate before = after.minusWeeks(1);
 
             if(ChronoUnit.DAYS.between(d,after) < ChronoUnit.DAYS.between(before,d)) {
                 return after;
@@ -512,8 +516,8 @@ public class DateExpression {
             int add = DayOfWeek.SATURDAY.getValue() - d.getDayOfWeek().getValue();
             if(add < 0) add+=7;
 
-            LocalDate after = d.plus(add,ChronoUnit.DAYS);
-            LocalDate before = after.minus(1,ChronoUnit.WEEKS);
+            LocalDate after = d.plusDays(add);
+            LocalDate before = after.minusWeeks(1);
 
             if(ChronoUnit.DAYS.between(d,after) < ChronoUnit.DAYS.between(before,d) && ChronoUnit.DAYS.between(d,after.plusDays(1)) < ChronoUnit.DAYS.between(before.plusDays(1),d)) {
                 return Stream.of(after,after.plusDays(1));
@@ -603,7 +607,23 @@ public class DateExpression {
         return new DateExpression(week,fullWeks,allDates);
     }
 
+    /**
+     * Indica si es una expresión aproximada
+     *
+     * @return  Un booleano indicando si es un dato exacto o aproximado
+     */
+    public boolean isApproximate() {
+        return approximate;
+    }
 
+    /**
+     * Permite modificar el valor del estado de aproximado
+     *
+     * @param approximate   Si es o no aproximada
+     */
+    public void setApproximate(boolean approximate) {
+        this.approximate = approximate;
+    }
 
 
     /**

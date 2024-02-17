@@ -29,6 +29,7 @@ import com.proxiasuite.dateparser.grammar.DateExpressionGrammarParser;
 import com.proxiasuite.dateparser.resolver.DateType;
 import com.proxiasuite.dateparser.resolver.IDateResolver;
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
 
 import java.time.DayOfWeek;
@@ -86,6 +87,16 @@ public class DateExpressionVisitor extends DateExpressionGrammarBaseListener {
      */
     private final int firstYear;
 
+    /**
+     * Si se trata de una expresión aproximada, fechas no exactas
+     */
+    private boolean approximate = false;
+
+    /**
+     * Si se ha producido algun error en el procesado
+     */
+    private boolean error = false;
+
     public DateExpressionVisitor(ZoneId zoneId, Locale locale, int firstYear, int years, boolean fullWeeks) {
         this.years = years;
         this.fullWeeks = fullWeeks;
@@ -107,8 +118,9 @@ public class DateExpressionVisitor extends DateExpressionGrammarBaseListener {
     @Override
     public void exitProg(DateExpressionGrammarParser.ProgContext ctx) {
         Object o = getStack().poll();
-        if(o instanceof DateExpression) {
+        if(o instanceof DateExpression && !error) {
             result = (DateExpression) o;
+            result.setApproximate(approximate);
         }
     }
 
@@ -137,7 +149,9 @@ public class DateExpressionVisitor extends DateExpressionGrammarBaseListener {
         if(ctx.Greater()!=null) opcode = DateExpression.Opcode.GREATER;
         else if(ctx.Lesser()!=null) opcode = DateExpression.Opcode.LESSER;
 
-        getStack().push(main.compare(compared,opcode,positive,negative));
+        if(main!=null) {
+            getStack().push(main.compare(compared, opcode, positive, negative));
+        }
 
     }
 
@@ -167,7 +181,7 @@ public class DateExpressionVisitor extends DateExpressionGrammarBaseListener {
                 }
             }
         }
-        getStack().push(expr);
+        if(expr!=null) getStack().push(expr);
     }
 
     @Override
@@ -184,10 +198,12 @@ public class DateExpressionVisitor extends DateExpressionGrammarBaseListener {
                 else from = (DateExpression) o;
             }
         }
-        if(from == null) {
-            getStack().push(to);
-        } else {
-            getStack().push(from.to(to));
+        if(to!=null) {
+            if (from == null) {
+                getStack().push(to);
+            } else {
+                getStack().push(from.to(to));
+            }
         }
     }
 
@@ -293,20 +309,22 @@ public class DateExpressionVisitor extends DateExpressionGrammarBaseListener {
         }
         // Tenemos que aplicar sobre la expresión la condición de "at" que tengamos
         // determinada.
-        if(dayQualifiers.stream().anyMatch(d->d == DayQualifierType.Week)) {
-            expr = expr.atWeek(days.toArray(new Integer[0]));
-        } else if(dayQualifiers.stream().anyMatch(d->d == DayQualifierType.Weekend)) {
-            expr = expr.atWeekend(days.toArray(new Integer[0]));
-        } else if(dayQualifiers.stream().anyMatch(d->d == DayQualifierType.Fortnight)) {
-            expr = expr.atFortnight(days.toArray(new Integer[0]));
-        } else if(!dayQualifiers.isEmpty()) {
-            expr = expr.at(dayQualifiers.stream().filter(d->d.dayOfWeek!=null).map(d->d.dayOfWeek).toArray(DayOfWeek[]::new),
-                           days.toArray(new Integer[0]));
-        } else {
-            expr = expr.at(days.toArray(new Integer[0]));
+        if(expr!=null) {
+            if (dayQualifiers.stream().anyMatch(d -> d == DayQualifierType.Week)) {
+                expr = expr.atWeek(days.toArray(new Integer[0]));
+            } else if (dayQualifiers.stream().anyMatch(d -> d == DayQualifierType.Weekend)) {
+                expr = expr.atWeekend(days.toArray(new Integer[0]));
+            } else if (dayQualifiers.stream().anyMatch(d -> d == DayQualifierType.Fortnight)) {
+                expr = expr.atFortnight(days.toArray(new Integer[0]));
+            } else if (!dayQualifiers.isEmpty()) {
+                expr = expr.at(dayQualifiers.stream().filter(d -> d.dayOfWeek != null).map(d -> d.dayOfWeek).toArray(DayOfWeek[]::new),
+                        days.toArray(new Integer[0]));
+            } else {
+                expr = expr.at(days.toArray(new Integer[0]));
+            }
+            // Lo recolocamos en la pila...
+            getStack().push(expr);
         }
-        // Lo recolocamos en la pila...
-        getStack().push(expr);
     }
 
     @Override
@@ -370,7 +388,8 @@ public class DateExpressionVisitor extends DateExpressionGrammarBaseListener {
                 dateType = DateType.Easter;
                 break;
             case DateExpressionGrammarParser.ID:
-                getStack().push(dictionary.get(tn.getText()));
+                Object o = dictionary.get(tn.getText());
+                if(o!=null) getStack().push(o);
                 break;
 
         }
@@ -451,10 +470,15 @@ public class DateExpressionVisitor extends DateExpressionGrammarBaseListener {
     public void exitEveryRule(ParserRuleContext ctx) {
         Deque<Object> currentStack = globalStack.poll();
         Deque<Object> parentStack = globalStack.peek();
-        if(parentStack!=null && currentStack.peek()!=null) {
+        if(parentStack!=null && currentStack!=null && currentStack.peek()!=null) {
             Object returned = currentStack.poll();
             parentStack.push(returned);
         }
+    }
+
+    @Override
+    public void exitAprox(DateExpressionGrammarParser.AproxContext ctx) {
+        this.approximate = true;
     }
 
     /**
@@ -475,5 +499,10 @@ public class DateExpressionVisitor extends DateExpressionGrammarBaseListener {
             if (c.Week() != null) unit = ChronoUnit.WEEKS;
         }
         return unit;
+    }
+
+    @Override
+    public void visitErrorNode(ErrorNode node) {
+        this.error = true;
     }
 }
