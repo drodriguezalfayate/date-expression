@@ -93,19 +93,19 @@ dateExpr: (before|after|near|at);
  * Una expresión de tipo before, nos permite mantener la referencia
  * a n [algo] antes
  */
-before: day (Week | Month)? Before at |
-        day? weekday Before at;
+before: day (Week | Month)? Before dateExpr |
+        day? weekday Before dateExpr;
 
 /**
  * Una expresión de tipo after, nos permite mantener la referencia
  * a [n] algo después
  */
-after: day (Week | Month)? After at |
-       day? weekday After at;
+after: day (Week | Month)? After dateExpr |
+       day? weekday After dateExpr;
 /**
  * Una operación de proximidad, puede ser un día próximo o el fin de semana próximo
  */
-near: baseDay Near at;
+near: baseDay Near dateExpr;
 
 /**
  * Una operación de "en fecha concreta" o "en rango de fechas"
