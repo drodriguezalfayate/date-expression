@@ -396,10 +396,21 @@ public class GrammarTest {
         assertEquals(LocalDate.of(2026,5,17),de.getDates().get(5));
     }
 
+
     @Test
     public void testFortnight() {
         DateExpression de = DateExpression.parse(new Locale("es","ES"), ZoneId.of("Europe/Paris"),true,2024,3,"primera quincena de febrero");
         assertNotNull(de);
+        assertFalse(de.isApproximate());
+        assertEquals(45,de.getDates().size());
+
+    }
+
+    @Test
+    public void testApproximateFortnight() {
+        DateExpression de = DateExpression.parse(new Locale("es","ES"), ZoneId.of("Europe/Paris"),true,2024,3,"aprox primera quincena de febrero");
+        assertNotNull(de);
+        assertTrue(de.isApproximate());
         assertEquals(45,de.getDates().size());
 
     }
@@ -437,5 +448,16 @@ public class GrammarTest {
         assertEquals(LocalDate.of(2025,7,7),de.getDates().get(1));
         assertEquals(LocalDate.of(2026,7,6),de.getDates().get(2));
 
+    }
+
+    @Test
+    public void testInvalidGrammar() {
+        DateExpression de = DateExpression.parse(new Locale("es","ES"), ZoneId.of("Europe/Paris"),true,2024,3,"navidad");
+        assertNull(de);
+
+        de = DateExpression.parse(new Locale("es","ES"), ZoneId.of("Europe/Paris"),true,2024,3,"del 3 al 4 de julio");
+        assertNull(de);
+
+    }
     }
 }
