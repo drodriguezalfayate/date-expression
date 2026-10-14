@@ -21,6 +21,19 @@ serie de datos de entrada:
 * Expresión en castellano que refleja la fecha.
 
 
+## Validación
+`DateExpression.parse` se recupera de los errores sin avisar: una palabra mal escrita o el texto que sobra al final se
+ignoran, y puede dar menos fechas de las que se querían. Para comprobar una expresión que escribe una persona está
+`DateExpression.validate`, con los mismos datos de entrada, que devuelve un `DateExpressionValidation`: la expresión
+resuelta si es válida o la lista de errores (`DateExpressionError`), cada uno con su tipo, su posición, el texto, la
+palabra conocida más parecida (si es una palabra mal escrita) y lo que se esperaba en ese punto. `getMessage()` lo
+explica en castellano.
+
+```java
+DateExpressionValidation v = DateExpression.validate(locale, zoneId, true, 2024, 2, "uno de enro");
+v.errors().get(0).getMessage(); // Palabra no reconocida «enro» (posición 8). ¿Quería decir «enero»?
+```
+
 ## Ejemplos de expresiones
 
 Todos los ejemplos se refieren a 2024 y con una periodicidad de dos años

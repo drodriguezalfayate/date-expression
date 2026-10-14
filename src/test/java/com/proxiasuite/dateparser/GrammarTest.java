@@ -451,6 +451,17 @@ public class GrammarTest {
     }
 
     @Test
+    public void testFollowingSunday() {
+        DateExpression de = DateExpression.parse(new Locale("es","ES"), ZoneId.of("Europe/Paris"),true,2024,3,"Domingo siguiente al 24 de junio");
+        assertNotNull(de);
+        assertEquals(3,de.getDates().size());
+        assertEquals(LocalDate.of(2024,6,30),de.getDates().get(0));
+        assertEquals(LocalDate.of(2025,6,29),de.getDates().get(1));
+        assertEquals(LocalDate.of(2026,6,28),de.getDates().get(2));
+
+    }
+
+    @Test
     public void testInvalidGrammar() {
         DateExpression de = DateExpression.parse(new Locale("es","ES"), ZoneId.of("Europe/Paris"),true,2024,3,"navidad");
         assertNull(de);
@@ -459,5 +470,5 @@ public class GrammarTest {
         assertNull(de);
 
     }
-    }
+
 }
