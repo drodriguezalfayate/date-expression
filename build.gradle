@@ -17,8 +17,9 @@ repositories {
 }
 
 dependencies {
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.8.1'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.8.1'
+    testImplementation platform('org.junit:junit-bom:5.13.4')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
     antlr "org.antlr:antlr4:4.13.1"
     api("org.antlr:antlr4-runtime:4.13.1")
 }
@@ -37,8 +38,15 @@ javadoc {
 }
 
 java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
     withJavadocJar()
     withSourcesJar()
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
 }
 
 afterEvaluate {
@@ -76,13 +84,19 @@ publishing {
     }
     repositories {
         maven {
-            url = uri("${buildDir}/publishing-repository")
+            url = layout.buildDirectory.dir('publishing-repository')
         }
     }
 }
 
 signing {
+    // Solo se firma al publicar para Maven Central (publish); publishToMavenLocal no necesita la clave
+    required = { gradle.taskGraph.hasTask(':publish') }
     sign publishing.publications.mavenJava
+}
+
+tasks.withType(Sign).configureEach {
+    onlyIf { gradle.taskGraph.hasTask(':publish') }
 }
 
 

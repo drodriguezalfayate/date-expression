@@ -1,4 +1,7 @@
 # Changelog
+## 1.1.1 [14/10/2026]
+### Internals
+* Gradle 9.8.1 y toolchain de Java 25 [@drodriguez]
 
 ## 1.0.3 [17/02/2024]
 ### Bug Fixes
