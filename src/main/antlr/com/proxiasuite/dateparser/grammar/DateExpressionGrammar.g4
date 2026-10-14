@@ -45,6 +45,11 @@ prog: def* (logic | expr);
 expr: aprox? period (And period)*;
 
 /**
+ * Expresión aproximada: aprox o aproximadamente
+ */
+aprox: Aprox;
+
+/**
  * Expresión lógica para evaluar una condición si o no, admite definición
  * de variables para facilitar su uso.
  */
@@ -242,7 +247,7 @@ Month: 'mes' ('es')?;
 Week: 'semana' 's'?;
 Fortnight: 'quincena' 's'?;
 
-aprox: 'aprox' 'imadamente'?;
+Aprox: 'aprox' 'imadamente'?;
 
 // Los días son implicitos, es una operación que podemos ignorar tranquilamente.
 Day: 'd' ('i'|'\u00ED') 'a' 's'? -> skip;
@@ -285,17 +290,17 @@ Twelve: TenthFragment SecndFragment | 'doce';
 Thirteen: TenthFragment ThirdFragment | 'trece';
 Fourteen: TenthFragment FourthFragment | 'catorce';
 Fifteen: TenthFragment FifthFragment | 'quince';
-Sixteen: TenthFragment SixthFragment | 'dieciseis';
+Sixteen: TenthFragment SixthFragment | 'diecis' ('e'|'\u00E9') 'is';
 Seventeen: TenthFragment SeventhFragment | 'diecisiete';
 Eighteen: TenthFragment EighthFragment | 'dieciocho';
 Nineteen: TenthFragment NinthFragment | 'diecinueve';
 Twenty: TwentiethFragment | 'veinte';
 TwentyOne: TwentiethFragment FirstFragment | 'veintiuno';
-TwentyTwo: TwentiethFragment SecndFragment | 'veintidos';
-TwentyThree: TwentiethFragment ThirdFragment | 'veintitres';
+TwentyTwo: TwentiethFragment SecndFragment | 'veintid' ('o'|'\u00F3') 's';
+TwentyThree: TwentiethFragment ThirdFragment | 'veintitr' ('e'|'\u00E9') 's';
 TwentyFour: TwentiethFragment FourthFragment | 'veinticuatro';
 TwentyFive: TwentiethFragment FifthFragment | 'veinticinco';
-TwentySix: TwentiethFragment SixthFragment | 'veintiseis';
+TwentySix: TwentiethFragment SixthFragment | 'veintis' ('e'|'\u00E9') 'is';
 TwentySeven: TwentiethFragment SeventhFragment | 'veintisiete';
 TwentyEight: TwentiethFragment EighthFragment | 'veintiocho';
 TwentyNine: TwentiethFragment NinthFragment | 'veintinueve';

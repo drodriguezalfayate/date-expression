@@ -1,5 +1,8 @@
 # Changelog
 ## 1.1.1 [14/10/2026]
+### Bug Fixes
+* `aproximadamente` escrito junto no se reconocía (solo `aprox`) [@drodriguez]
+* Los números con tilde (`dieciséis`, `veintidós`, `veintitrés`, `veintiséis`) no se reconocían [@drodriguez]
 ### Internals
 * Gradle 9.8.1 y toolchain de Java 25 [@drodriguez]
 
