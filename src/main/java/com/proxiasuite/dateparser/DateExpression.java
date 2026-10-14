@@ -684,6 +684,26 @@ public class DateExpression {
 
     }
 
+    /**
+     * Valida una expresión de forma estricta y, si es válida, la resuelve. A diferencia de {@link #parse}, que se
+     * recupera de los errores sin avisar, informa de cada error con su posición: palabras que no conoce la gramática
+     * (con la más parecida que sí conoce), caracteres no válidos, palabras fuera de lugar (con lo que se esperaba),
+     * expresiones incompletas, texto que sobra al final y expresiones que no dan ninguna fecha.
+     *
+     * @param locale    El idioma asociado
+     * @param zoneId    La zona horaria
+     * @param fullWeeks Si el computo de semanas es siempre de semana completa
+     * @param firstYear El año con el que comenzamos
+     * @param years     Para cuantos años resolvemos la expresión
+     * @param expr      Texto con la expresión a resolver.
+     *
+     * @return Los errores y, si no hay ninguno, la expresión resuelta
+     */
+    public static DateExpressionValidation validate(Locale locale, ZoneId zoneId, boolean fullWeeks, int firstYear,
+                                                    int years, String expr) {
+        return DateExpressionValidator.validate(locale, zoneId, fullWeeks, firstYear, years, expr);
+    }
+
 
 
 }

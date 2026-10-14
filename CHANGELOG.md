@@ -1,5 +1,9 @@
 # Changelog
 ## 1.1.1 [14/10/2026]
+### Enhancements
+* `DateExpression.validate`: validación estricta con cada error localizado (posición y texto): palabras no reconocidas
+  con la palabra conocida más parecida, caracteres no válidos, palabras fuera de lugar con lo que se esperaba,
+  expresiones incompletas, texto sobrante al final y expresiones que no dan ninguna fecha. `parse` no cambia [@drodriguez]
 ### Bug Fixes
 * `aproximadamente` escrito junto no se reconocía (solo `aprox`) [@drodriguez]
 * Los números con tilde (`dieciséis`, `veintidós`, `veintitrés`, `veintiséis`) no se reconocían [@drodriguez]
